@@ -53,6 +53,9 @@ COPY . .
 # Collect static files during build
 RUN python manage.py collectstatic --noinput --clear
 
+# Migrate database
+RUN python manage.py migrate --noinput
+
 # Expose port
 EXPOSE $PORT
 
