@@ -1,0 +1,69 @@
+# Multi-stage build for production optimization
+FROM python:3.12-slim-bookworm as builder
+
+# Install build dependencies
+RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libmariadb-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
+    libwebp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Production stage
+FROM python:3.12-slim-bookworm
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash wagtail
+
+# Install runtime dependencies
+RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \
+    libpq5 \
+    libmariadb3 \
+    libjpeg62-turbo \
+    libwebp7 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder stage
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    DJANGO_SETTINGS_MODULE=mysite.settings.production
+
+# Create app directory
+WORKDIR /app
+RUN chown wagtail:wagtail /app
+
+# Copy application code
+COPY --chown=wagtail:wagtail . .
+
+# Switch to non-root user
+USER wagtail
+
+# Collect static files
+RUN python manage.py collectstatic --noinput --clear
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:$PORT/health/ || exit 1
+
+# Expose port
+EXPOSE $PORT
+
+# Run application
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn mysite.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"]

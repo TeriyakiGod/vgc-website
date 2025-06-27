@@ -153,6 +153,25 @@ python manage.py collectstatic
 
 ## Deployment
 
+### CapRover Deployment
+
+This project includes automated deployment to CapRover via GitHub Actions and manual deployment scripts.
+
+#### Quick Deployment
+
+1. **Automated (CI/CD)**:
+   - Configure GitHub secrets: `CAPROVER_SERVER`, `CAPROVER_APP_NAME`, `CAPROVER_APP_TOKEN`
+   - Push to main branch - deployment happens automatically
+
+2. **Manual**:
+   ```bash
+   ./deploy-caprover.sh
+   ```
+
+See [CAPROVER_DEPLOYMENT.md](CAPROVER_DEPLOYMENT.md) for detailed deployment instructions.
+
+### Production Deployment
+
 For production deployment, make sure to:
 1. Set `DEBUG=False` in your environment variables
 2. Configure proper `SECRET_KEY`
