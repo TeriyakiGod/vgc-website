@@ -66,4 +66,6 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 EXPOSE $PORT
 
 # Run application
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn mysite.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"]
+# NOTE: Database migrations should be handled separately using the release
+# phase facilities of your hosting platform or run manually before deployment.
+CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

@@ -136,6 +136,8 @@ deploy_to_caprover() {
 
     if [ $? -eq 0 ]; then
         print_status "Deployment successful!"
+        print_status "Running database migrations..."
+        run_migrations
         print_status "Your app should be available at: ${CAPROVER_SERVER}/api/v2/user/apps/appData/${APP_NAME}"
     else
         print_error "Deployment failed"
@@ -144,6 +146,26 @@ deploy_to_caprover() {
 
     # Cleanup
     rm -f "${APP_NAME}.tar.gz"
+}
+
+# Run database migrations on the deployed app
+run_migrations() {
+    print_status "Running database migrations on CapRover..."
+
+    # Execute migration command on the deployed container
+    curl -X POST \
+        "${CAPROVER_SERVER}/api/v2/user/apps/appData/${APP_NAME}/exec" \
+        -H "x-captain-auth: ${APP_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "command": "python manage.py migrate --noinput"
+        }'
+
+    if [ $? -eq 0 ]; then
+        print_status "Database migrations completed successfully"
+    else
+        print_warning "Migration command may have failed - check CapRover logs"
+    fi
 }
 
 # Main deployment function

@@ -55,6 +55,18 @@ jobs:
         pre-commit install
         pre-commit run --all-files
 
+    - name: Run database migrations
+      env:
+        DB_NAME: test_vgc_website
+        DB_USER: test_user
+        DB_PASSWORD: test_password
+        DB_HOST: localhost
+        DB_PORT: 5432
+        SECRET_KEY: test-secret-key-for-ci
+        DEBUG: 'False'
+      run: |
+        python manage.py migrate --noinput
+
     - name: Run Django system checks
       env:
         DB_NAME: test_vgc_website
@@ -79,7 +91,7 @@ jobs:
       run: |
         python manage.py test
 
-    - name: Run migrations check
+    - name: Verify migrations are up to date
       env:
         DB_NAME: test_vgc_website
         DB_USER: test_user
