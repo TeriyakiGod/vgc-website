@@ -1,5 +1,8 @@
 # Environment variables
 .env
+.env.local
+.env.production
+.env.caprover
 
 # Database
 db.sqlite3
@@ -51,3 +54,11 @@ static/
 
 # Logs
 *.log
+
+# Deployment artifacts
+*.tar.gz
+bandit-report.json
+
+# CapRover deployment files with secrets
+captain-definition.local
+.caprover/

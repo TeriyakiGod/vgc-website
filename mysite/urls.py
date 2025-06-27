@@ -1,17 +1,40 @@
 from django.conf import settings
 from django.contrib import admin
+from django.db import connection
+from django.http import JsonResponse
 from django.urls import include, path
+from django.utils import timezone
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 
+
+def health_check(request):
+    """Health check endpoint for monitoring and load balancers"""
+    try:
+        # Check database connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+
+        return JsonResponse(
+            {
+                "status": "healthy",
+                "database": "connected",
+                "timestamp": timezone.now().isoformat(),
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"status": "unhealthy", "error": str(e)}, status=503)
+
+
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("admin/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
+    path("health/", health_check, name="health_check"),
 ]
 
 

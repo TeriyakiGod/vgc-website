@@ -1,0 +1,47 @@
+{
+  "captainVersion": 4,
+  "services": {
+    "$$cap_appname": {
+      "image": "$$cap_appname:latest",
+      "restart": "always",
+      "environment": {
+        "SECRET_KEY": "$$cap_django_secret_key",
+        "DEBUG": "False",
+        "DJANGO_SETTINGS_MODULE": "mysite.settings.production",
+        "DB_NAME": "$$cap_db_name",
+        "DB_USER": "$$cap_db_user",
+        "DB_PASSWORD": "$$cap_db_password",
+        "DB_HOST": "$$cap_db_host",
+        "DB_PORT": "$$cap_db_port",
+        "ALLOWED_HOSTS": "$$cap_allowed_hosts",
+        "PORT": "8000"
+      },
+      "volumes": [
+        "$$cap_appname-static:/app/staticfiles",
+        "$$cap_appname-media:/app/media"
+      ],
+      "caproverExtra": {
+        "containerHttpPort": "8000",
+        "notExposeAsWebApp": "false"
+      }
+    },
+    "$$cap_appname-db": {
+      "image": "postgres:15-alpine",
+      "restart": "always",
+      "environment": {
+        "POSTGRES_DB": "$$cap_db_name",
+        "POSTGRES_USER": "$$cap_db_user",
+        "POSTGRES_PASSWORD": "$$cap_db_password"
+      },
+      "volumes": ["$$cap_appname-db-data:/var/lib/postgresql/data"],
+      "caproverExtra": {
+        "notExposeAsWebApp": "true"
+      }
+    }
+  },
+  "volumes": {
+    "$$cap_appname-static": {},
+    "$$cap_appname-media": {},
+    "$$cap_appname-db-data": {}
+  }
+}
