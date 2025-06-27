@@ -92,13 +92,7 @@ build_image() {
     fi
 
     docker build -t "${APP_NAME}:latest" -f "$DOCKERFILE" .
-
-    if [ $? -eq 0 ]; then
-        print_status "Docker image built successfully"
-    else
-        print_error "Failed to build Docker image"
-        exit 1
-    fi
+    print_status "Docker image built successfully"
 }
 
 # Test the built image
