@@ -1,127 +1,67 @@
 name: Deploy to CapRover
 
+env:
+    CONTEXT_DIR: './'
+    IMAGE_NAME: ${{ github.repository }}
+    DOCKERFILE: Dockerfile.production
+    CAPROVER_APP: ${{ secrets.CAPROVER_APP_NAME }}
+    DOCKER_REGISTRY: ghcr.io
+
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
-env:
-  PYTHON_VERSION: '3.12'
-  NODE_VERSION: '18'
-
 jobs:
   test:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: test_vgc_website
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run pre-commit hooks
-      run: |
-        pre-commit install
-        pre-commit run --all-files
-
-    - name: Run database migrations
-      env:
-        DB_NAME: test_vgc_website
-        DB_USER: test_user
-        DB_PASSWORD: test_password
-        DB_HOST: localhost
-        DB_PORT: 5432
-        SECRET_KEY: test-secret-key-for-ci
-        DEBUG: 'False'
-      run: |
-        python manage.py migrate --noinput
-
-    - name: Run Django system checks
-      env:
-        DB_NAME: test_vgc_website
-        DB_USER: test_user
-        DB_PASSWORD: test_password
-        DB_HOST: localhost
-        DB_PORT: 5432
-        SECRET_KEY: test-secret-key-for-ci
-        DEBUG: 'False'
-      run: |
-        python manage.py check --deploy
-
-    - name: Run tests
-      env:
-        DB_NAME: test_vgc_website
-        DB_USER: test_user
-        DB_PASSWORD: test_password
-        DB_HOST: localhost
-        DB_PORT: 5432
-        SECRET_KEY: test-secret-key-for-ci
-        DEBUG: 'False'
-      run: |
-        python manage.py test
-
-    - name: Verify migrations are up to date
-      env:
-        DB_NAME: test_vgc_website
-        DB_USER: test_user
-        DB_PASSWORD: test_password
-        DB_HOST: localhost
-        DB_PORT: 5432
-        SECRET_KEY: test-secret-key-for-ci
-        DEBUG: 'False'
-      run: |
-        python manage.py migrate --check
+    uses: ./.github/workflows/test.yml
 
   build-and-deploy:
-    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+    if: |
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'pull_request' && github.head_ref == 'dev' && (github.base_ref == 'main' || github.base_ref == 'master'))
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Build Docker image
+    - name: Set up environment variables
       run: |
-        docker build -t vgc-website:latest .
+        IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+        echo "IMAGE_NAME_WITH_REGISTRY=$DOCKER_REGISTRY/$IMAGE_NAME_LOWER" >> $GITHUB_ENV
+        export IMAGE_NAME_WITH_REGISTRY=$DOCKER_REGISTRY/$IMAGE_NAME_LOWER
+        echo "FULL_IMAGE_NAME=$IMAGE_NAME_WITH_REGISTRY:$GITHUB_SHA-gitsha" >> $GITHUB_ENV
+        echo "CAPROVER_GIT_COMMIT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      run: |
+        cd $CONTEXT_DIR
+        rm /tmp/build_args || echo OK
+        env >/tmp/build_args
+        echo "--build-arg \""$(cat /tmp/build_args | sed -z 's/\n/" --build-arg "/g')"IGNORE_VAR=IGNORE_VAR\"" >/tmp/build_args
+        BUILD_ARGS=$(cat /tmp/build_args)
+        COMMAND="docker build -t $FULL_IMAGE_NAME -t $IMAGE_NAME_WITH_REGISTRY:latest -f $DOCKERFILE $BUILD_ARGS --no-cache ."
+        /bin/bash -c "$COMMAND"
+        docker push $IMAGE_NAME_WITH_REGISTRY:latest
+        docker push $FULL_IMAGE_NAME
+        rm /tmp/build_args
 
     - name: Deploy to CapRover
       uses: caprover/deploy-from-github@v1.1.2
       with:
         server: '${{ secrets.CAPROVER_SERVER }}'
-        app: '${{ secrets.CAPROVER_APP_NAME }}'
+        app: '${{ env.CAPROVER_APP }}'
         token: '${{ secrets.CAPROVER_APP_TOKEN }}'
-        image: vgc-website:latest
+        image: '${{ env.FULL_IMAGE_NAME }}'
