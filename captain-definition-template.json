@@ -9,7 +9,7 @@
         "DEBUG": "False",
         "DJANGO_SETTINGS_MODULE": "mysite.settings.production",
         "DB_NAME": "$$cap_db_name",
-        "DB_USER": "$$cap_db_user", 
+        "DB_USER": "$$cap_db_user",
         "DB_PASSWORD": "$$cap_db_password",
         "DB_HOST": "$$cap_db_host",
         "DB_PORT": "$$cap_db_port",
@@ -33,9 +33,7 @@
         "POSTGRES_USER": "$$cap_db_user",
         "POSTGRES_PASSWORD": "$$cap_db_password"
       },
-      "volumes": [
-        "$$cap_appname-db-data:/var/lib/postgresql/data"
-      ],
+      "volumes": ["$$cap_appname-db-data:/var/lib/postgresql/data"],
       "caproverExtra": {
         "notExposeAsWebApp": "true"
       }
