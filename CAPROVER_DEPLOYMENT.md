@@ -20,7 +20,32 @@ Add the following secrets to your GitHub repository (`Settings > Secrets and var
 
 - `CAPROVER_SERVER`: Your CapRover server URL (e.g., `https://captain.yourdomain.com`)
 - `CAPROVER_APP_NAME`: Your app name in CapRover (e.g., `vgc-website`)
-- `CAPROVER_APP_TOKEN`: Your CapRover app token
+- `CAPROVER_APP_TOKEN`: Your CapRover app token (see "How to Get App Token" below)
+
+#### How to Get App Token
+
+**Method 1: From CapRover Dashboard (Recommended)**
+1. Log into your CapRover dashboard
+2. Go to your app (e.g., `vgc-website`)
+3. Click on the app to open its settings
+4. Go to the **"Deployment"** tab
+5. Look for **"App Token"** section
+6. Click **"Enable App Token"** if not already enabled
+7. Copy the generated token
+
+**Method 2: Using CapRover CLI**
+```bash
+# Install CapRover CLI if not already installed
+npm install -g caprover
+
+# Login to your CapRover server
+caprover login
+
+# Get app info (includes token if enabled)
+caprover api --path="/user/apps/appData/YOUR_APP_NAME" --method="GET"
+```
+
+**Important**: Keep your app token secure! It provides deployment access to your application.
 
 #### GitHub Actions Workflow
 

@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.db import connection
 from django.http import JsonResponse
 from django.urls import include, path
+from django.utils import timezone
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
@@ -21,7 +22,7 @@ def health_check(request):
             {
                 "status": "healthy",
                 "database": "connected",
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": timezone.now().isoformat(),
             }
         )
     except Exception as e:
