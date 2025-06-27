@@ -1,3 +1,4 @@
+import logging
 import os
 
 from .base import *
@@ -7,6 +8,8 @@ DEBUG = False
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    logging.warning("SECRET_KEY environment variable is required in production")
 
 # SECURITY WARNING: define the correct hosts in production!
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
