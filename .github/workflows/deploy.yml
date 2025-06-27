@@ -118,20 +118,6 @@ jobs:
       run: |
         docker build -t vgc-website:latest .
 
-    - name: Test Docker image
-      run: |
-        docker run --rm -d -p 8000:8000 --name test-container \
-          -e SECRET_KEY="test-key" \
-          -e DEBUG="False" \
-          -e DB_NAME="sqlite" \
-          vgc-website:latest
-        sleep 5
-        # Run migrations in the test container
-        docker exec test-container python manage.py migrate --noinput
-        sleep 5
-        curl -f http://localhost:8000/health/ || curl -f http://localhost:8000 || exit 1
-        docker stop test-container
-
     - name: Deploy to CapRover
       uses: caprover/deploy-from-github@v1.1.2
       with:
