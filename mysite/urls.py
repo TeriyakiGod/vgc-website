@@ -21,9 +21,7 @@ def health_check(request):
             {
                 "status": "healthy",
                 "database": "connected",
-                "timestamp": str(
-                    connection.queries[-1] if connection.queries else "N/A"
-                ),
+                "timestamp": datetime.now().isoformat(),
             }
         )
     except Exception as e:
