@@ -90,11 +90,13 @@ jobs:
       contents: read
       packages: write
     if: |
-      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
-      (github.event_name == 'pull_request' && github.head_ref == 'dev' && (github.base_ref == 'main' || github.base_ref == 'master'))
+      (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Set up environment variables
       run: |
@@ -112,17 +114,17 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push Docker image
-      run: |
-        cd $CONTEXT_DIR
-        rm /tmp/build_args || echo OK
-        env >/tmp/build_args
-        echo "--build-arg \""$(cat /tmp/build_args | sed -z 's/\n/" --build-arg "/g')"IGNORE_VAR=IGNORE_VAR\"" >/tmp/build_args
-        BUILD_ARGS=$(cat /tmp/build_args)
-        COMMAND="docker build -t $FULL_IMAGE_NAME -t $IMAGE_NAME_WITH_REGISTRY:latest -f $DOCKERFILE $BUILD_ARGS --no-cache ."
-        /bin/bash -c "$COMMAND"
-        docker push $IMAGE_NAME_WITH_REGISTRY:latest
-        docker push $FULL_IMAGE_NAME
-        rm /tmp/build_args
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ env.CONTEXT_DIR }}
+        file: ${{ env.DOCKERFILE }}
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.IMAGE_NAME_WITH_REGISTRY }}:latest
+          ${{ env.FULL_IMAGE_NAME }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Deploy to CapRover
       uses: caprover/deploy-from-github@v1.1.2
