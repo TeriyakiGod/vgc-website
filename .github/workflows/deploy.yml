@@ -16,13 +16,6 @@ env:
     SECRET_KEY: test-secret-key-for-ci
     DEBUG: 'False'
 
-env:
-    CONTEXT_DIR: './'
-    IMAGE_NAME: ${{ github.repository }}
-    DOCKERFILE: Dockerfile.production
-    CAPROVER_APP: ${{ secrets.CAPROVER_APP_NAME }}
-    DOCKER_REGISTRY: ghcr.io
-
 on:
   push:
     branches: [ main, master ]
