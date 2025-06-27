@@ -125,8 +125,11 @@ jobs:
           -e DEBUG="False" \
           -e DB_NAME="sqlite" \
           vgc-website:latest
-        sleep 10
-        curl -f http://localhost:8000 || exit 1
+        sleep 5
+        # Run migrations in the test container
+        docker exec test-container python manage.py migrate --noinput
+        sleep 5
+        curl -f http://localhost:8000/health/ || curl -f http://localhost:8000 || exit 1
         docker stop test-container
 
     - name: Deploy to CapRover
