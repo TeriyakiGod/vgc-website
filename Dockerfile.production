@@ -50,9 +50,6 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
-# Migrate database
-RUN python manage.py migrate --noinput
-
 # Collect static files during build
 RUN python manage.py collectstatic --noinput --clear
 

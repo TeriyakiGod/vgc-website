@@ -40,10 +40,6 @@ WORKDIR /app
 # Copy the source code of the project into the container.
 COPY . .
 
-
-# Migrate the database.
-RUN python manage.py migrate --noinput
-
 # Collect static files.
 RUN python manage.py collectstatic --noinput --clear
 
