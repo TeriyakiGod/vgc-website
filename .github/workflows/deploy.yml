@@ -1,5 +1,12 @@
 name: Deploy to CapRover
 
+env:
+    CONTEXT_DIR: './'
+    IMAGE_NAME: ${{ github.repository }}
+    DOCKERFILE: Dockerfile.production
+    CAPROVER_APP: ${{ secrets.CAPROVER_APP_NAME }}
+    DOCKER_REGISTRY: ghcr.io
+
 on:
   push:
     branches: [ main, master ]
@@ -7,7 +14,7 @@ on:
     branches: [ main, master ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
@@ -16,9 +23,37 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up environment variables
+      run: |
+        echo "IMAGE_NAME_WITH_REGISTRY=$DOCKER_REGISTRY/$IMAGE_NAME" >> $GITHUB_ENV
+        export IMAGE_NAME_WITH_REGISTRY=$DOCKER_REGISTRY/$IMAGE_NAME
+        echo "FULL_IMAGE_NAME=$IMAGE_NAME_WITH_REGISTRY:$GITHUB_SHA-gitsha" >> $GITHUB_ENV
+        echo "CAPROVER_GIT_COMMIT_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      run: |
+        cd $CONTEXT_DIR
+        rm /tmp/build_args || echo OK
+        env >/tmp/build_args
+        echo "--build-arg \""$(cat /tmp/build_args | sed -z 's/\n/" --build-arg "/g')"IGNORE_VAR=IGNORE_VAR\"" >/tmp/build_args
+        BUILD_ARGS=$(cat /tmp/build_args)
+        COMMAND="docker build -t $FULL_IMAGE_NAME -t $IMAGE_NAME_WITH_REGISTRY:latest -f $DOCKERFILE $BUILD_ARGS --no-cache ."
+        /bin/bash -c "$COMMAND"
+        docker push $IMAGE_NAME_WITH_REGISTRY:latest
+        docker push $FULL_IMAGE_NAME
+        rm /tmp/build_args
+
     - name: Deploy to CapRover
       uses: caprover/deploy-from-github@v1.1.2
       with:
         server: '${{ secrets.CAPROVER_SERVER }}'
-        app: '${{ secrets.CAPROVER_APP_NAME }}'
+        app: '${{ env.CAPROVER_APP }}'
         token: '${{ secrets.CAPROVER_APP_TOKEN }}'
+        image: '${{ env.FULL_IMAGE_NAME }}'
