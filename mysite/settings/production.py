@@ -36,7 +36,9 @@ STATIC_ROOT = "/app/static/"
 MEDIA_ROOT = "/app/media/"
 
 # WhiteNoise configuration
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Use CompressedStaticFilesStorage instead of CompressedManifestStaticFilesStorage
+# to avoid manifest-related errors during development
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # Update Wagtail admin base URL for production
 WAGTAILADMIN_BASE_URL = os.environ.get("WAGTAILADMIN_BASE_URL", "http://localhost:8000")
