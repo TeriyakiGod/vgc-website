@@ -114,14 +114,9 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image
-      run: |
-        docker build -t vgc-website:latest .
-
     - name: Deploy to CapRover
       uses: caprover/deploy-from-github@v1.1.2
       with:
         server: '${{ secrets.CAPROVER_SERVER }}'
         app: '${{ secrets.CAPROVER_APP_NAME }}'
         token: '${{ secrets.CAPROVER_APP_TOKEN }}'
-        image: vgc-website:latest
