@@ -11,8 +11,11 @@ EXPOSE 8000
 # 1. Force Python stdout and stderr streams to be unbuffered.
 # 2. Set PORT variable that is used by Gunicorn. This should match "EXPOSE"
 #    command.
+# 3. Set Django settings module for development
 ENV PYTHONUNBUFFERED=1 \
-    PORT=8000
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000 \
+    DJANGO_SETTINGS_MODULE=mysite.settings.dev
 
 # Install system packages required by Wagtail and Django.
 RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-recommends \
@@ -25,7 +28,7 @@ RUN apt-get update --yes --quiet && apt-get install --yes --quiet --no-install-r
  && rm -rf /var/lib/apt/lists/*
 
 # Install the application server.
-RUN pip install "gunicorn==20.0.4"
+RUN pip install "gunicorn>=20.1,<21.0"
 
 # Install the project requirements.
 COPY requirements.txt /
@@ -35,8 +38,8 @@ RUN pip install -r /requirements.txt
 WORKDIR /app
 
 # Set this directory to be owned by the "wagtail" user. This Wagtail project
-# uses SQLite, the folder needs to be owned by the user that
-# will be writing to the database file.
+# uses PostgreSQL, but the folder needs to be owned by the user that
+# will be running the application.
 RUN chown wagtail:wagtail /app
 
 # Copy the source code of the project into the container.

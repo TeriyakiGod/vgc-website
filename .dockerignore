@@ -3,11 +3,16 @@
 /static/
 *.sqlite3
 
+# Environment files
+.env
+.env.*
+
 # Python and others
 __pycache__
 *.pyc
 .DS_Store
 *.swp
+/.venv/
 /venv/
 /tmp/
 /.vagrant/
@@ -18,6 +23,17 @@ node_modules/
 .vscode
 coverage
 .python-version
+
+# Git
+.git
+.gitignore
+
+# Documentation and configs
+README.md
+*.md
+.pre-commit-config.yaml
+.flake8
+bandit-report.json
 
 # Distribution / packaging
 .Python
