@@ -15,23 +15,27 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Django Debug Toolbar
 if DEBUG:
-    INSTALLED_APPS += [
-        "debug_toolbar",
-    ]
+    import sys
 
-    MIDDLEWARE += [
-        "debug_toolbar.middleware.DebugToolbarMiddleware",
-    ]
+    # Only add debug toolbar if not running tests
+    if "test" not in sys.argv:
+        INSTALLED_APPS += [
+            "debug_toolbar",
+        ]
 
-    # Debug Toolbar configuration
-    INTERNAL_IPS = [
-        "127.0.0.1",
-        "localhost",
-    ]
+        MIDDLEWARE += [
+            "debug_toolbar.middleware.DebugToolbarMiddleware",
+        ]
 
-    DEBUG_TOOLBAR_CONFIG = {
-        "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
-    }
+        # Debug Toolbar configuration
+        INTERNAL_IPS = [
+            "127.0.0.1",
+            "localhost",
+        ]
+
+        DEBUG_TOOLBAR_CONFIG = {
+            "SHOW_TOOLBAR_CALLBACK": lambda request: DEBUG,
+        }
 
 # Enhanced logging for development
 LOGGING = {
