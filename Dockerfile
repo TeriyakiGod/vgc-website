@@ -48,11 +48,12 @@ COPY --chown=wagtail:wagtail . .
 # Use user "wagtail" to run the build commands below and the server itself.
 USER wagtail
 
+# Migrate the database.
+RUN python manage.py migrate --noinput
+
 # Collect static files.
 RUN python manage.py collectstatic --noinput --clear
 
 # Runtime command that executes when "docker run" is called.
 # Start the application server only.
-# NOTE: Database migrations should be handled separately using the release
-# phase facilities of your hosting platform or run manually before deployment.
-CMD ["gunicorn", "mysite.wsgi:application"]
+CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]

@@ -42,24 +42,19 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000 \
     DJANGO_SETTINGS_MODULE=mysite.settings.production
 
 # Create app directory
 WORKDIR /app
-RUN chown wagtail:wagtail /app
 
-# Copy application code
-COPY --chown=wagtail:wagtail . .
+# Migrate database
+RUN python manage.py migrate --noinput
 
-# Make startup script executable
-RUN chmod +x start.sh
-
-# Switch to non-root user
-USER wagtail
+# Collect static files during build
+RUN python manage.py collectstatic --noinput --clear
 
 # Expose port
 EXPOSE $PORT
 
-# Run application with startup script
-CMD ["/bin/bash", "./start.sh"]
+# Run application directly with gunicorn
+CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:" + str(os.getenv("PORT", 8000)), "--workers", "3", "--timeout", "120", "--max-requests", "1000", "--max-requests-jitter", "100", "--preload", "--access-logfile", "-", "--error-logfile", "-"]
