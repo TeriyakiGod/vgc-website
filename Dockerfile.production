@@ -53,5 +53,5 @@ COPY . .
 # Expose port
 EXPOSE $PORT
 
-# Run application directly with gunicorn
-CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--max-requests", "1000", "--max-requests-jitter", "100", "--preload", "--access-logfile", "-", "--error-logfile", "-"]
+# Run application with startup script
+CMD ["sh", "./runserver.sh"]
