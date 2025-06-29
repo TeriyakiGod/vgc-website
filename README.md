@@ -31,6 +31,15 @@ DB_PORT=5432
 # Django Configuration
 DEBUG=True
 SECRET_KEY=your-secret-key-here
+
+# Security Configuration
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+```
+
+**Note**: For production, set `CSRF_TRUSTED_ORIGINS` to your actual domain(s):
+```bash
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
 ### Running the Project
@@ -178,3 +187,26 @@ For production deployment, make sure to:
 3. Set up proper database credentials
 4. Configure static file serving
 5. Use a production WSGI server like Gunicorn
+6. Set `CSRF_TRUSTED_ORIGINS` to your domain(s)
+
+#### Production Environment Variables
+
+Key production environment variables to configure:
+
+```bash
+# Security
+DEBUG=False
+SECRET_KEY=your-production-secret-key-here
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+
+# Database
+DB_NAME=vgc_website
+DB_USER=vgc_user
+DB_PASSWORD=your-secure-database-password
+DB_HOST=your-db-host
+DB_PORT=5432
+
+# Admin
+WAGTAILADMIN_BASE_URL=https://yourdomain.com
+```
