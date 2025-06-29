@@ -42,4 +42,4 @@ COPY . .
 
 # Runtime command that executes when "docker run" is called.
 # Start the application server only.
-CMD ["gunicorn", "mysite.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["sh", "./runserver.sh"]
