@@ -15,10 +15,7 @@
         "DB_PORT": "$$cap_db_port",
         "ALLOWED_HOSTS": "$$cap_allowed_hosts",
         "WAGTAILADMIN_BASE_URL": "$$cap_admin_base_url",
-        "PORT": "8000",
-        "DJANGO_SUPERUSER_USERNAME": "$$cap_superuser_username",
-        "DJANGO_SUPERUSER_EMAIL": "$$cap_superuser_email",
-        "DJANGO_SUPERUSER_PASSWORD": "$$cap_superuser_password"
+        "PORT": "8000"
       },
       "volumes": [
         "$$cap_appname-static:/app/static",

@@ -21,14 +21,6 @@ When deploying to CapRover, you'll need to set these environment variables in yo
 - `PORT`: Application port (set to `8000`)
 - `WAGTAILADMIN_BASE_URL`: Your app's public URL (e.g., `https://myapp.mydomain.com`)
 
-## Optional Environment Variables
-
-### Automatic Superuser Creation
-If you want to automatically create a Django superuser on first deployment:
-- `DJANGO_SUPERUSER_USERNAME`: Admin username (e.g., `admin`)
-- `DJANGO_SUPERUSER_EMAIL`: Admin email
-- `DJANGO_SUPERUSER_PASSWORD`: Admin password (use a strong password)
-
 ## Example CapRover App Configuration
 
 ```env
@@ -43,9 +35,6 @@ DB_HOST=srv-captain--myapp-db
 DB_PORT=5432
 PORT=8000
 WAGTAILADMIN_BASE_URL=https://myapp.mydomain.com
-DJANGO_SUPERUSER_USERNAME=admin
-DJANGO_SUPERUSER_EMAIL=admin@mydomain.com
-DJANGO_SUPERUSER_PASSWORD=your-secure-admin-password
 ```
 
 ## Database Setup

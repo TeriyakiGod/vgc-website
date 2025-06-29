@@ -21,7 +21,7 @@ fi
 case "$1" in
     start)
         echo "Starting PostgreSQL database..."
-        if docker-compose up -d; then
+        if docker-compose up -d db; then
             echo "Database started successfully!"
         else
             echo "Failed to start database!"
@@ -30,7 +30,7 @@ case "$1" in
         ;;
     stop)
         echo "Stopping PostgreSQL database..."
-        if docker-compose down; then
+        if docker-compose down db; then
             echo "Database stopped successfully!"
         else
             echo "Failed to stop database!"
@@ -39,7 +39,7 @@ case "$1" in
         ;;
     restart)
         echo "Restarting PostgreSQL database..."
-        if docker-compose down && docker-compose up -d; then
+        if docker-compose down db && docker-compose up -d db; then
             echo "Database restarted successfully!"
         else
             echo "Failed to restart database!"
