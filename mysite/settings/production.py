@@ -45,12 +45,6 @@ DATABASES = {
 STATIC_ROOT = "/app/static/"
 MEDIA_ROOT = "/app/media/"
 
-# WhiteNoise configuration
-# Updated to use the new STORAGES setting instead of deprecated STATICFILES_STORAGE
-STORAGES["staticfiles"][
-    "BACKEND"
-] = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 # Logging configuration
 LOGGING = {
     "version": 1,
