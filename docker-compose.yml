@@ -16,6 +16,29 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=mysite.settings.dev
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=vgc_website
+      - DB_USER=vgc_user
+      - DB_PASSWORD=vgc_password
+      - SECRET_KEY=django-insecure-development-key-change-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
