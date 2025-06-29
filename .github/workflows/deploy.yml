@@ -3,7 +3,7 @@ name: Test and Deploy to CapRover
 env:
     CONTEXT_DIR: './'
     IMAGE_NAME: ${{ github.repository }}
-    DOCKERFILE: Dockerfile.production
+    DOCKERFILE: Dockerfile
     CAPROVER_APP: ${{ secrets.CAPROVER_APP_NAME }}
     DOCKER_REGISTRY: ghcr.io
     # Test database configuration
